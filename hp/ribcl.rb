@@ -41,17 +41,26 @@ module HP
     :get_server_power_on_time => {:context => :server_info, :mode => :read},
     :get_uid_status => {:context => :server_info, :mode => :read},
 
-    :clear_server_power_on_time => {:context => :server_info, :mode => :write},
-    :cold_boot_server => {:context => :server_info, :mode => :write},
-    :hold_pwr_btn => {:context => :server_info, :mode => :write},
-    :reset_server => {:context => :server_info, :mode => :write},
-    :server_auto_pwr => {:context => :server_info, :mode => :write},
-    :server_name => {:context => :server_info, :mode => :write},
-    :set_host_power => {:context => :server_info, :mode => :write},
-    :set_host_power_saver => {:context => :server_info, :mode => :write},
-    :set_power_cap => {:context => :server_info, :mode => :write},
-    :set_pwreg => {:context => :server_info, :mode => :write},
-    :uid_control => {:context => :server_info, :mode => :write},
-    :warm_boot_server => {:context => :server_info, :mode => :write},
+    :clear_server_power_on_time => {:context => :server_info, :mode => :write}, # no args
+    :cold_boot_server => {:context => :server_info, :mode => :write}, # no args
+    :hold_pwr_btn => {:context => :server_info, :mode => :write}, # toggle = yes/no
+    :reset_server => {:context => :server_info, :mode => :write}, # no args
+    :server_auto_pwr => {:context => :server_info, :mode => :write}, # value = yes/no/random/restore
+    :server_name => {:context => :server_info, :mode => :write}, # value = hostname
+    :set_host_power => {:context => :server_info, :mode => :write}, # host_power = yes/no
+    :set_host_power_saver => {:context => :server_info, :mode => :write}, # host_power_saver = [1-4] (doc)
+    :set_power_cap => {:context => :server_info, :mode => :write}, # power_cap = n
+    :set_pwreg => {:context => :server_info, :mode => :write}, # <pwralert type="peak"/> <pwralert_settings threshold="200" duration="35"/>
+    :uid_control => {:context => :server_info, :mode => :write}, # uid= yes/no
+    :warm_boot_server => {:context => :server_info, :mode => :write}, # no args
+
+    :get_user => {:context => :user_info, :mode => :read},
+    :get_all_users => {:context => :user_info, :mode => :read},
+    :get_all_user_info => {:context => :user_info, :mode => :read},
+
+    :add_user => {:context => :user_info, :mode => :write},
+    :delete_user => {:context => :user_info, :mode => :write},
+    :del_users_ssh_key => {:context => :user_info, :mode => :write},
+    :mod_user => {:context => :user_info, :mode => :write},
   }
 end

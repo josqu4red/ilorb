@@ -1,9 +1,9 @@
+require 'logger'
 require 'socket'
 require 'openssl'
 require 'net/https'
 require 'nokogiri'
-require 'json'
-require 'logger'
+require 'nori'
 
 module HP
   class ILO
@@ -19,11 +19,14 @@ module HP
       @log = Logger.new(STDOUT)
       @log.level = Logger::DEBUG
       #@log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
+
+      @nori = Nori.new(:convert_tags_to => lambda{|tag| tag.downcase.to_sym})
     end
 
     # TODO more tests (args, etc)
     def method_missing(name, *args, &block)
       request = ribcl(RIBCL[name][:context], RIBCL[name][:mode], name)
+      @log.info("Calling #{name}")
       response = case @protocol
       when :http
         send_http_request(request)
@@ -58,7 +61,7 @@ module HP
       end
     end
 
-    # Older ILO just eat XML
+    # Older ILO just eat raw XML
     # Send XML over raw SSL-wrapped TCP socket and read XML stream
     def send_raw_request(xml)
       sock = TCPSocket.new(@hostname, @port)
@@ -81,7 +84,6 @@ module HP
       response
     end
 
-    # TODO find sane notation for XML -> hash
     def parse_response(xml, command)
       @log.debug("Response:\n#{xml}")
 
@@ -90,7 +92,7 @@ module HP
       # first is empty since string begins with XML header
       messages.shift
 
-      output = {}
+      output = nil
 
       messages.each do |doc|
         xml_doc = Nokogiri::XML(doc){|cfg| cfg.nonet.noblanks}
@@ -102,30 +104,17 @@ module HP
               check_response_status(node)
             rescue Exception => e
               @log.error(e.message)
+              return nil
             end
           when "INFORM"
             # OSEF
-          else # command result
-            if node.children.length > 0
-              node.children.each do |child|
-                if child.attributes.length == 1 and child.has_attribute?("VALUE")
-                  output[child.name.downcase] = parse_value(child.attr("VALUE"))
-                else
-                  output[child.name.downcase] = {}
-                  child.each do |key,val|
-                    output[child.name.downcase][key.downcase] = parse_value(val)
-                  end
-                end
-              end
-            end
-
-            if node.attributes.length > 0
-            end
+          else # actual result
+            output = @nori.parse(node.to_s)
           end
         end
       end
 
-      puts JSON.pretty_generate(output)
+      output
     end
 
     def ribcl(context, mode, command, args = nil, &block)
