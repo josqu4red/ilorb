@@ -3,6 +3,7 @@ require 'openssl'
 require 'net/https'
 require 'nokogiri'
 require 'json'
+require 'logger'
 
 module HP
   class ILO
@@ -11,12 +12,13 @@ module HP
       @login = config[:login] || "Administrator"
       @password = config[:password]
       @port = config[:port] || 443
-
+      @protocol = config[:protocol] || :http
+      @verify_ssl = config[:verify_ssl] || false
       @ribcl_path = "/ribcl"
-      @verify_ssl = false
 
-      # TODO better choice
-      @protocol = :http
+      @log = Logger.new(STDOUT)
+      @log.level = Logger::DEBUG
+      #@log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
     end
 
     # TODO more tests (args, etc)
@@ -37,19 +39,27 @@ module HP
 
     private
 
+    # ILO >= 3 speak HTTP
+    # Send XML request with HTTP POST and get back XML messages
     def send_http_request(xml)
-      https = Net::HTTP.new(@hostname, @port)
-      https.use_ssl = true
-      https.verify_mode = OpenSSL::SSL::VERIFY_NONE unless @verify_ssl
-      response = https.post(@ribcl_path, xml)
+      http = Net::HTTP.new(@hostname, @port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE unless @verify_ssl
+
+      @log.info("Sending POST request to #{@hostname}:#{@port}#{@ribcl_path}")
+      @log.debug("Request:\n#{xml}")
+      response = http.post(@ribcl_path, xml)
       if response.is_a?(Net::HTTPNotFound)
         @protocol = :raw
+        @log.info("Got 404, switching to RAW protocol")
         send_raw_request(xml)
       else
         response.body
       end
     end
 
+    # Older ILO just eat XML
+    # Send XML over raw SSL-wrapped TCP socket and read XML stream
     def send_raw_request(xml)
       sock = TCPSocket.new(@hostname, @port)
 
@@ -57,8 +67,10 @@ module HP
       ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
       ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
       ssl_sock.sync_close = true
-      ssl_sock.connect
 
+      @log.info("Connecting to #{@hostname}:#{@port}")
+      ssl_sock.connect
+      @log.debug("Request:\n#{xml}")
       ssl_sock.puts("#{xml}\r\n")
       response = ""
       while line = ssl_sock.gets
@@ -71,9 +83,10 @@ module HP
 
     # TODO find sane notation for XML -> hash
     def parse_response(xml, command)
+      @log.debug("Response:\n#{xml}")
+
       # ILO sends back multiple XML documents, split by XML header
       messages = xml.split(/<\?xml.*?\?>\r?\n/)
-
       # first is empty since string begins with XML header
       messages.shift
 
@@ -88,7 +101,7 @@ module HP
             begin
               check_response_status(node)
             rescue Exception => e
-              puts e.message
+              @log.error(e.message)
             end
           when "INFORM"
             # OSEF
