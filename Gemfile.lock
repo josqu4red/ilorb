@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    ruby-hpilo (0.0.1)
+      nokogiri
+      nori
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    mini_portile (0.5.0)
+    nokogiri (1.6.0)
+      mini_portile (~> 0.5.0)
+    nori (2.2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.2)
+  ruby-hpilo!
