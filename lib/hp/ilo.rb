@@ -17,8 +17,7 @@ module HP
       @ribcl_path = "/ribcl"
 
       @log = Logger.new(STDOUT)
-      @log.level = Logger::DEBUG
-      #@log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
+      @log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
 
       @nori = Nori.new(:convert_tags_to => lambda{|tag| tag.downcase.to_sym})
     end

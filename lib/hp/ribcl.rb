@@ -1,5 +1,6 @@
 module HP
   RIBCL = {
+    # RIB_INFO
     :get_ahs_status => {:context => :rib_info, :mode => :read},
     :get_all_languages => {:context => :rib_info, :mode => :read},
     :get_all_licenses => {:context => :rib_info, :mode => :read},
@@ -29,6 +30,7 @@ module HP
     :reset_rib => {:context => :rib_info, :mode => :write},
     :update_firmware => {:context => :rib_info, :mode => :write},
 
+    # SERVER_INFO
     :get_embedded_health => {:context => :server_info, :mode => :read},
     :get_host_power_saver_status => {:context => :server_info, :mode => :read},
     :get_host_power_status => {:context => :server_info, :mode => :read},
@@ -41,26 +43,26 @@ module HP
     :get_server_power_on_time => {:context => :server_info, :mode => :read},
     :get_uid_status => {:context => :server_info, :mode => :read},
 
-    :clear_server_power_on_time => {:context => :server_info, :mode => :write}, # no args
-    :cold_boot_server => {:context => :server_info, :mode => :write}, # no args
-    :hold_pwr_btn => {:context => :server_info, :mode => :write}, # toggle = yes/no
-    :reset_server => {:context => :server_info, :mode => :write}, # no args
+    :clear_server_power_on_time => {:context => :server_info, :mode => :write},
+    :cold_boot_server => {:context => :server_info, :mode => :write},
+    :hold_pwr_btn => {:context => :server_info, :mode => :write, :attributes => [:toggle]},
+    :reset_server => {:context => :server_info, :mode => :write},
     :server_auto_pwr => {:context => :server_info, :mode => :write}, # value = yes/no/random/restore
-    :server_name => {:context => :server_info, :mode => :write}, # value = hostname
-    :set_host_power => {:context => :server_info, :mode => :write}, # host_power = yes/no
+    :server_name => {:context => :server_info, :mode => :write, :attributes => [:value]}, # value = hostname
+    :set_host_power => {:context => :server_info, :mode => :write, }, # host_power = yes/no
     :set_host_power_saver => {:context => :server_info, :mode => :write}, # host_power_saver = [1-4] (doc)
     :set_power_cap => {:context => :server_info, :mode => :write}, # power_cap = n
     :set_pwreg => {:context => :server_info, :mode => :write}, # <pwralert type="peak"/> <pwralert_settings threshold="200" duration="35"/>
     :uid_control => {:context => :server_info, :mode => :write}, # uid= yes/no
-    :warm_boot_server => {:context => :server_info, :mode => :write}, # no args
+    :warm_boot_server => {:context => :server_info, :mode => :write},
 
-    :get_user => {:context => :user_info, :mode => :read},
+    # USER_INFO
+    :get_user => {:context => :user_info, :mode => :read, :attributes => [:user_login]},
     :get_all_users => {:context => :user_info, :mode => :read},
     :get_all_user_info => {:context => :user_info, :mode => :read},
 
-    :add_user => {:context => :user_info, :mode => :write},
-    :delete_user => {:context => :user_info, :mode => :write},
-    :del_users_ssh_key => {:context => :user_info, :mode => :write},
-    :mod_user => {:context => :user_info, :mode => :write},
+    :add_user => {:context => :user_info, :mode => :write, :attributes => [:user_name, :user_login, :password], :elements => [:admin_priv, :remote_cons_priv, :reset_server_priv, :virtual_media_priv, :config_ilo_priv]},
+    :delete_user => {:context => :user_info, :mode => :write, :attributes => [:user_login]},
+    :mod_user => {:context => :user_info, :mode => :write, :attributes => [:user_login], :elements => [:user_name, :user_login, :password, :admin_priv, :remote_cons_priv, :reset_server_priv, :virtual_media_priv, :config_ilo_priv, :del_users_ssh_key]},
   }
 end
