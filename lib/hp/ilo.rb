@@ -20,11 +20,13 @@ module HP
       @log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
 
       @nori = Nori.new(:convert_tags_to => lambda{|tag| tag.downcase.to_sym})
+
+      setup_commands
     end
 
     # TODO more tests (args, etc)
     def method_missing(name, *args, &block)
-      request = ribcl(RIBCL[name][:context], RIBCL[name][:mode], name)
+      request = ribcl_request(@commands[name][:context], @commands[name][:mode], name)
       @log.info("Calling #{name}")
       response = case @protocol
       when :http
@@ -36,7 +38,11 @@ module HP
     end
 
     def respond_to(name)
-      RIBCL.has_key?(name) ? true : super
+      @commands.has_key?(name) ? true : super
+    end
+
+    def known_commands
+      @commands.keys
     end
 
     private
@@ -116,7 +122,7 @@ module HP
       output
     end
 
-    def ribcl(context, mode, command, args = nil, &block)
+    def ribcl_request(context, mode, command, args = nil, &block)
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.ribcl(:version => "2.0") {
           xml.login(:password => @password, :user_login => @login) {
@@ -145,6 +151,14 @@ module HP
       else
         value
       end
+    end
+
+    def setup_commands
+      ribcl = HP::RIBCL.new
+      Dir.glob(File.join(File.dirname(__FILE__), "definitions", "*.rb")).each do |file|
+        ribcl.instance_eval(File.read(file), file)
+      end
+      @commands = ribcl.commands
     end
   end
 end
