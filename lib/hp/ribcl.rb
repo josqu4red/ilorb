@@ -1,15 +1,25 @@
 module HP
-  class RIBCL
-    attr_reader :commands
-
+  class RIBCL < Hash
     def initialize
-      @commands = {}
+      super
+    end
+
+    alias_method :has_command?, :has_key?
+
+    [:context, :mode, :attributes, :elements].each do |key|
+      define_method "has_#{key}?" do |command|
+        self.has_key?(command) and self[command].has_key?(key) ? true : false
+      end
+
+      define_method "get_#{key}" do |command|
+        self.send("has_#{key}?", command) ? self[command][key] : nil
+      end
     end
 
     def context(name, &block)
       context = Context.new(name)
       context.instance_eval(&block)
-      @commands.merge! context.commands
+      merge!(context.commands)
     end
   end
 
@@ -36,20 +46,18 @@ module HP
   class Command
     def initialize(name)
       @name = name.to_sym
-      @attributes = {}
-      @elements = {}
+      @attributes = []
+      @elements = []
     end
 
     [:attributes, :elements].each do |container|
       define_method container do |*param|
-        if param.is_a?(Hash)
-          hash = param
-        elsif param.is_a?(Array)
-          hash = Hash[param.map{|x|[x]}]
+        if param.is_a?(Array)
+          array = param
         else
-          { param => nil }
+          [ param ]
         end
-        instance_variable_set("@#{container}", instance_variable_get("@#{container}").merge(hash))
+        instance_variable_set("@#{container}", instance_variable_get("@#{container}").concat(array))
       end
     end
 
