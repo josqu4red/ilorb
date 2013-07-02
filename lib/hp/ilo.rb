@@ -24,28 +24,57 @@ module HP
       setup_commands
     end
 
-    # TODO more tests (args, etc)
+    # args should be empty or contain a hash anytime
     def method_missing(name, *args, &block)
-      request = ribcl_request(@commands[name][:context], @commands[name][:mode], name)
-      @log.info("Calling #{name}")
-      response = case @protocol
-      when :http
-        send_http_request(request)
-      when :raw
-        send_raw_request(request)
+      if @ribcl.has_command?(name)
+        params = args.first || {}
+        attributes = {}
+        elements = {}
+
+        if @ribcl.has_attributes?(name)
+          @ribcl.get_attributes(name).each do |attr|
+            fu("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
+            attributes[attr] = params[attr]
+          end
+        end
+
+        #TODO manage elements with attribute name != "value"
+        if @ribcl.has_elements?(name)
+          @ribcl.get_elements(name).each do |elt|
+            fu("Element #{elt} missing in #{name} call") unless params.has_key?(elt)
+            elements[elt] = params[elt]
+          end
+        end
+
+        #TODO manage commands with elements
+        @log.info("Calling method #{name}")
+        request = ribcl_request(name, attributes)
+
+        response = send_request(request)
+        parse_response(response, name)
+      else
+        super
       end
-      parse_response(response, name)
     end
 
     def respond_to(name)
-      @commands.has_key?(name) ? true : super
+      @ribcl.has_command?(name) ? true : super
     end
 
     def known_commands
-      @commands.keys
+      @ribcl.keys
     end
 
     private
+
+    def send_request(xml)
+      case @protocol
+      when :http
+        send_http_request(xml)
+      when :raw
+        send_raw_request(xml)
+      end
+    end
 
     # ILO >= 3 speak HTTP
     # Send XML request with HTTP POST and get back XML messages
@@ -97,7 +126,9 @@ module HP
       # first is empty since string begins with XML header
       messages.shift
 
-      output = nil
+      output = {}
+      #TODO manage status output
+      output[:status] = []
 
       messages.each do |doc|
         xml_doc = Nokogiri::XML(doc){|cfg| cfg.nonet.noblanks}
@@ -105,30 +136,31 @@ module HP
         xml_doc.root.children.each do |node|
           case node.name
           when "RESPONSE"
-            begin
-              check_response_status(node)
-            rescue Exception => e
-              @log.error(e.message)
-              return nil
+            code = node.attr("STATUS").to_i(16)
+            message = node.attr("MESSAGE")
+            output[:status] << { :code => code, :message => message }
+            if code != 0
+              @log.error("#{message} (#{code})")
+              break
             end
           when "INFORM"
             # OSEF
           else # actual result
-            output = @nori.parse(node.to_s)
+            output.merge!(@nori.parse(node.to_s))
           end
         end
       end
 
+      output[:status].uniq!
       output
     end
 
-    def ribcl_request(context, mode, command, args = nil, &block)
+    def ribcl_request(command, args = {})
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.ribcl(:version => "2.0") {
           xml.login(:password => @password, :user_login => @login) {
-            xml.send(context, :mode => mode) {
+            xml.send(@ribcl.get_context(command), :mode => @ribcl.get_mode(command)) {
               xml.send(command, args) {
-                yield xml if block_given?
               }
             }
           }
@@ -136,10 +168,6 @@ module HP
       end
 
       builder.to_xml
-    end
-
-    def check_response_status(node)
-      raise "#{node.attr("MESSAGE")} (#{node.attr("STATUS")})" unless node.attr("STATUS").to_i(16) == 0
     end
 
     def parse_value(value)
@@ -154,11 +182,17 @@ module HP
     end
 
     def setup_commands
-      ribcl = HP::RIBCL.new
+      @ribcl = HP::RIBCL.new
       Dir.glob(File.join(File.dirname(__FILE__), "definitions", "*.rb")).each do |file|
-        ribcl.instance_eval(File.read(file), file)
+        @log.info("Loading #{file} command file")
+        @ribcl.instance_eval(File.read(file), file)
       end
-      @commands = ribcl.commands
+      nil
+    end
+
+    def fu(message)
+      @log.error(message)
+      raise message
     end
   end
 end
