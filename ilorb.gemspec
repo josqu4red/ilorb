@@ -2,14 +2,16 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
+require 'ilorb/version'
+
 Gem::Specification.new do |spec|
-  spec.name          = "ruby-hpilo"
-  spec.version       = "0.0.1"
+  spec.name          = "ilorb"
+  spec.version       = ILORb::VERSION
   spec.authors       = ["Jonathan Amiez"]
   spec.email         = ["jonathan.amiez@gmail.com"]
   spec.description   = "HP ILO Ruby interface"
-  spec.summary       = "Configure and retrieve data from your servers ILOs"
-  spec.homepage      = ""
+  spec.summary       = "Configure and retrieve data from server's ILO management card"
+  spec.homepage      = "https://github.com/josqu4red/ilorb"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

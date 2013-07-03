@@ -5,7 +5,7 @@ require 'net/https'
 require 'nokogiri'
 require 'nori'
 
-module HP
+module ILORb
   class ILO
     def initialize(config = {})
       @hostname = config[:hostname]
@@ -177,7 +177,7 @@ module HP
     end
 
     def setup_commands
-      @ribcl = HP::RIBCL.new
+      @ribcl = ILORb::RIBCL.new
       Dir.glob(File.join(File.dirname(__FILE__), "definitions", "*.rb")).each do |file|
         @log.info("Loading #{file} command file")
         @ribcl.instance_eval(File.read(file), file)

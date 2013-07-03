@@ -1,4 +1,4 @@
-module HP
+module ILORb
   class RIBCL < Hash
     def initialize
       super
