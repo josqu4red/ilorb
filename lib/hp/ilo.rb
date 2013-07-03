@@ -33,22 +33,30 @@ module HP
 
         if @ribcl.has_attributes?(name)
           @ribcl.get_attributes(name).each do |attr|
-            fu("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
-            attributes[attr] = params[attr]
+            # Attributes are mandatory
+            error("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
+            attributes[attr] = @ribcl.encode(params[attr])
           end
         end
 
         #TODO manage elements with attribute name != "value"
         if @ribcl.has_elements?(name)
           @ribcl.get_elements(name).each do |elt|
-            fu("Element #{elt} missing in #{name} call") unless params.has_key?(elt)
-            elements[elt] = params[elt]
+            # Elements are not mandatory for now
+            elements[elt] = @ribcl.encode(params[elt]) if params.has_key?(elt)
           end
         end
 
-        #TODO manage commands with elements
         @log.info("Calling method #{name}")
-        request = ribcl_request(name, attributes)
+        if elements.empty?
+          request = ribcl_request(name, attributes)
+        else
+          request = ribcl_request(name, attributes) do |xml|
+            elements.each do |key, value|
+              xml.send(key, :value => value)
+            end
+          end
+        end
 
         response = send_request(request)
         parse_response(response, name)
@@ -121,14 +129,10 @@ module HP
     def parse_response(xml, command)
       @log.debug("Response:\n#{xml}")
 
-      # ILO sends back multiple XML documents, split by XML header
-      messages = xml.split(/<\?xml.*?\?>\r?\n/)
-      # first is empty since string begins with XML header
-      messages.shift
+      # ILO sends back multiple XML documents, split by XML header and remove first (empty)
+      messages = xml.split(/<\?xml.*?\?>\r?\n/).drop(1)
 
       output = {}
-      #TODO manage status output
-      output[:status] = []
 
       messages.each do |doc|
         xml_doc = Nokogiri::XML(doc){|cfg| cfg.nonet.noblanks}
@@ -138,8 +142,10 @@ module HP
           when "RESPONSE"
             code = node.attr("STATUS").to_i(16)
             message = node.attr("MESSAGE")
-            output[:status] << { :code => code, :message => message }
-            if code != 0
+            if code == 0
+              output[:status] = { :code => code, :message => message }
+            else
+              output[:status] = { :code => code, :message => message }
               @log.error("#{message} (#{code})")
               break
             end
@@ -151,16 +157,16 @@ module HP
         end
       end
 
-      output[:status].uniq!
       output
     end
 
-    def ribcl_request(command, args = {})
+    def ribcl_request(command, args = {}, &block)
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.ribcl(:version => "2.0") {
           xml.login(:password => @password, :user_login => @login) {
             xml.send(@ribcl.get_context(command), :mode => @ribcl.get_mode(command)) {
               xml.send(command, args) {
+                yield xml if block_given?
               }
             }
           }
@@ -168,17 +174,6 @@ module HP
       end
 
       builder.to_xml
-    end
-
-    def parse_value(value)
-      case value
-      when /^Y$/i
-        true
-      when /^N$/i
-        false
-      else
-        value
-      end
     end
 
     def setup_commands
@@ -190,7 +185,7 @@ module HP
       nil
     end
 
-    def fu(message)
+    def error(message)
       @log.error(message)
       raise message
     end

@@ -4,6 +4,11 @@ module HP
       super
     end
 
+    VALUES = {
+      true => "yes",
+      false => "no",
+    }
+
     alias_method :has_command?, :has_key?
 
     [:context, :mode, :attributes, :elements].each do |key|
@@ -20,6 +25,10 @@ module HP
       context = Context.new(name)
       context.instance_eval(&block)
       merge!(context.commands)
+    end
+
+    def encode(value)
+      VALUES[value] ? VALUES[value] : value
     end
   end
 
