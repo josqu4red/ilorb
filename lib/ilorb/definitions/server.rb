@@ -13,30 +13,31 @@ context :server_info do
 
   write_cmd :clear_server_power_on_time
   write_cmd :cold_boot_server
-  write_cmd :reset_server
-  write_cmd :warm_boot_server
   write_cmd :hold_pwr_btn do
     attributes :toggle
   end
+  write_cmd :press_power_btn
+  write_cmd :reset_server
   write_cmd :server_auto_pwr do
-    attributes :value # = yes/no/random/restore
+    attributes :value
   end
   write_cmd :server_name do
-    attributes :value # = hostname
+    attributes :value
   end
   write_cmd :set_host_power do
-    attributes :host_power # = yes/no
+    attributes :host_power
   end
   write_cmd :set_host_power_saver do
-    attributes :host_power_saver # = [1-4] (doc)
+    attributes :host_power_saver
   end
   write_cmd :set_power_cap do
-    attributes :power_cap # = N
+    attributes :power_cap
   end
   write_cmd :set_pwreg do
-    elements :pwralert, :pwralert_settings # <pwralert type="peak"/> <pwralert_settings threshold="200" duration="35"/>
+    elements :pwralert => :type, :pwralert_settings => [:threshold, :duration]
   end
   write_cmd :uid_control do
-    attributes :uid # = yes/no
+    attributes :uid
   end
+  write_cmd :warm_boot_server
 end
