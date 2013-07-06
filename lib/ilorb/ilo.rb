@@ -31,8 +31,9 @@ module ILORb
     # args should be empty or contain a hash anytime
     def method_missing(name, *args, &block)
       if @ribcl.has_command?(name)
+        command = @ribcl.command(name)
 
-        raise NotImplemented, "#{name} is not supported" unless @ribcl.is_implemented?(name)
+        raise NotImplemented, "#{name} is not supported" unless command.supported?
 
         params = args.first || {}
         attributes = {}
@@ -41,33 +42,25 @@ module ILORb
 
         #TODO check for text
 
-        if @ribcl.has_attributes?(name)
-          @ribcl.get_attributes(name).each do |attr|
-            # Attributes are mandatory
-            error("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
-            attributes.store(attr, @ribcl.encode(params.delete(attr)))
-          end
+        command.get_attributes.each do |attr|
+          # Attributes are mandatory
+          error("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
+          attributes.store(attr, @ribcl.encode(params.delete(attr)))
         end
 
-        if @ribcl.has_elements?(name)
-          element_map = @ribcl.map_elements(name)
-          params.each do |key, value|
-            # Elements are not mandatory for now
-            elements.store(key, @ribcl.encode(params.delete(key))) if element_map.has_key?(key)
-          end
+        element_map = command.map_elements
+        params.each do |key, value|
+          # Elements are not mandatory for now
+          elements.store(key, @ribcl.encode(params.delete(key))) if element_map.has_key?(key)
         end
 
         #TODO check for CDATA
         #TODO fix duplicate nodes when multiple attributes
 
         @log.info("Calling method #{name}")
-        if elements.empty?
-          request = ribcl_request(name, attributes)
-        else
-          request = ribcl_request(name, attributes) do |xml|
-            elements.each do |key, value|
-              xml.send(element_map[key].first, element_map[key].last => value)
-            end
+        request = ribcl_request(command, attributes) do |xml|
+          elements.each do |key, value|
+            xml.send(element_map[key].first, element_map[key].last => value)
           end
         end
 
@@ -177,8 +170,8 @@ module ILORb
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.ribcl(:version => "2.0") {
           xml.login(:password => @password, :user_login => @login) {
-            xml.send(@ribcl.get_context(command), :mode => @ribcl.get_mode(command)) {
-              xml.send(command, args) {
+            xml.send(command.context, :mode => command.mode) {
+              xml.send(command.name, args) {
                 yield xml if block_given?
               }
             }

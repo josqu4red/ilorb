@@ -10,53 +10,13 @@ module ILORb
     }
 
     alias_method :has_command?, :has_key?
-
-    [:context, :mode, :attributes, :elements, :text].each do |key|
-      define_method "has_#{key}?" do |command|
-        self.has_key?(command) and self[command].has_key?(key) ? true : false
-      end
-
-      define_method "get_#{key}" do |command|
-        self.send("has_#{key}?", command) ? self[command][key] : nil
-      end
-    end
-
-    def is_implemented?(command)
-      has_command?(command) and !self[command].has_key?(:implemented)
-    end
-
-    def map_elements(command)
-      map = {}
-      if has_elements?(command)
-        get_elements(command).each do |name, type|
-          if type == :value
-            map.store(name, [name, type])
-          elsif type.is_a?(Array)
-            type.each do |elt|
-              map.store("#{name}_#{elt}".to_sym, [name, elt])
-            end
-          else
-            map.store("#{name}_#{type}".to_sym, [name, type])
-          end
-        end
-      end
-      map
-    end
+    alias_method :command, :fetch
 
     def encode(value)
       VALUES[value] ? VALUES[value] : value
     end
 
     private
-
-    # no use for now
-    #def get_params(command)
-    #  params = []
-    #  params += get_attributes(command).map{|a| a.to_s} if has_attributes?(command)
-    #  params << get_text(command).to_s if has_text?(command)
-    #  params += map_elements(command).keys if has_elements?(command)
-    #  params
-    #end
 
     def context(name, &block)
       context = Context.new(name)
@@ -77,39 +37,56 @@ module ILORb
 
     [:read, :write].each do |mode|
       define_method "#{mode}_cmd" do |name, &block|
-      command = Command.new(name)
-      command.instance_eval(&block) if block
-      result = command.to_hash
-      result[name].store(:context, @name)
-      result[name].store(:mode, mode)
-      @commands.merge!(result)
+        command = Command.new(name, @name, mode)
+        command.instance_eval(&block) if block
+        @commands[name] = command
       end
     end
   end
 
   class Command
-    def initialize(name)
-      @name = name.to_sym
+    attr_reader :name, :context, :mode
+
+    def initialize(name, context, mode)
+      @name, @context, @mode = name.to_sym, context, mode
       @attributes = []
       @elements = {}
       @text = nil
-      @not_implemented = false
+      @supported = true
     end
 
-    def to_hash
-      contents = {}
-      if @not_implemented
-        contents.store(:implemented, false)
-      else
-        # "Command" element has either children or text
-        if @text
-          contents.store(:text, @text) if @text
-        else
-          contents.store(:elements, @elements) unless @elements.empty?
-        end
-        contents.store(:attributes, @attributes) unless @attributes.empty?
+    [:attributes, :elements, :text].each do |key|
+      define_method "get_#{key}" do
+        instance_variable_get("@#{key}")
       end
-      {@name => contents}
+    end
+
+    def supported?
+      @supported
+    end
+
+    def map_elements
+      map = {}
+      @elements.each do |name, type|
+        if type == :value
+          map.store(name, [name, type])
+        elsif type.is_a?(Array)
+          type.each do |elt|
+            map.store("#{name}_#{elt}".to_sym, [name, elt])
+          end
+        else
+          map.store("#{name}_#{type}".to_sym, [name, type])
+        end
+      end
+      map
+    end
+
+    def get_params
+      params = []
+      params += @attributes
+      params << @text if @text
+      params += map_elements.keys
+      params
     end
 
     private
@@ -119,23 +96,27 @@ module ILORb
     end
 
     def elements(*params)
-      hash = {}
-      params.each do |param|
-        if param.is_a?(Hash)
-          hash.merge!(param)
-        else
-          hash.store(param, :value)
+      if @text.nil?
+        hash = {}
+        params.each do |param|
+          if param.is_a?(Hash)
+            hash.merge!(param)
+          else
+            hash.store(param, :value)
+          end
         end
+        @elements.merge!(hash)
       end
-      @elements.merge!(hash)
     end
 
     def text(param)
-      @text = param
+      if @elements.empty?
+        @text = param
+      end
     end
 
     def not_implemented
-      @not_implemented = true
+      @supported = false
     end
   end
 end
