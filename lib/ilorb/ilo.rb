@@ -55,12 +55,17 @@ module ILORb
         end
 
         #TODO check for CDATA
-        #TODO fix duplicate nodes when multiple attributes
 
         @log.info("Calling method #{name}")
         request = ribcl_request(command, attributes) do |xml|
           elements.each do |key, value|
-            xml.send(element_map[key].first, element_map[key].last => value)
+            elt = command.get_elements[element_map[key].first]
+            if elt.is_a?(Array)
+              attrs = Hash[elt.map{|x| [x, elements.delete(element_map.invert[[element_map[key].first, x]])]}]
+            else
+              attrs = {element_map[key].last => value}
+            end
+            xml.send(element_map[key].first, attrs)
           end
         end
 
@@ -76,7 +81,8 @@ module ILORb
     end
 
     def known_commands
-      @ribcl.keys
+      #@ribcl.keys
+      @ribcl.select{|name, command| command.supported?}.keys
     end
 
     private
