@@ -21,6 +21,10 @@ module ILORb
       end
     end
 
+    def is_implemented?(command)
+      has_command?(command) and !self[command].has_key?(:implemented)
+    end
+
     def map_elements(command)
       map = {}
       if has_elements?(command)

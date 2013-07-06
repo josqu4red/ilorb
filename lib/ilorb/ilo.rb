@@ -6,6 +6,9 @@ require 'nokogiri'
 require 'nori'
 
 module ILORb
+
+  class NotImplemented < StandardError; end
+
   class ILO
 
     def initialize(config = {})
@@ -28,12 +31,14 @@ module ILORb
     # args should be empty or contain a hash anytime
     def method_missing(name, *args, &block)
       if @ribcl.has_command?(name)
+
+        raise NotImplemented, "#{name} is not supported" unless @ribcl.is_implemented?(name)
+
         params = args.first || {}
         attributes = {}
         elements = {}
         element_map = nil
 
-        #TODO NotImplementedError if :not_impl is present
         #TODO check for text
 
         if @ribcl.has_attributes?(name)
