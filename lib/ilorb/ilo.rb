@@ -10,7 +10,6 @@ module ILORb
   class NotImplemented < StandardError; end
 
   class ILO
-
     def initialize(config = {})
       @hostname = config[:hostname]
       @login = config[:login] || "Administrator"
@@ -80,8 +79,7 @@ module ILORb
       @ribcl.has_command?(name) ? true : super
     end
 
-    def known_commands
-      #@ribcl.keys
+    def supported_commands
       @ribcl.select{|name, command| command.supported?}.keys
     end
 
@@ -189,11 +187,7 @@ module ILORb
     end
 
     def setup_commands
-      @ribcl = ILORb::RIBCL.new
-      Dir.glob(File.join(File.dirname(__FILE__), "definitions", "*.rb")).each do |file|
-        @log.info("Loading #{file} command file")
-        @ribcl.instance_eval(File.read(file), file)
-      end
+      @ribcl = ILORb::RIBCL.load(File.join(File.dirname(__FILE__), "definitions", "*.rb"))
       nil
     end
 

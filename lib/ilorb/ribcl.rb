@@ -4,14 +4,23 @@ module ILORb
       super
     end
 
+    # meaningful aliases
+    alias_method :has_command?, :has_key?
+    alias_method :command, :fetch
+
     # mapping between Ruby objects and api format
     VALUES = {
       true => "yes",
       false => "no",
     }
 
-    alias_method :has_command?, :has_key?
-    alias_method :command, :fetch
+    def self.load(path)
+      obj = new
+      Dir.glob(path).each do |file|
+        obj.instance_eval(File.read(file), file)
+      end
+      obj
+    end
 
     def encode(value)
       VALUES[value] ? VALUES[value] : value
