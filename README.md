@@ -2,6 +2,8 @@
 
 ILORb is a library created to ease interaction with HP servers baseboard management cards (ILO), using their XML interface.
 
+It is primarily meant to integrate with Chef config management system, but it can of course be used standalone.
+
 It supports RIB, SERVER and USER commands for ILO 2, 3 and 4 (no other hardware to test on).
 
  * By default, it will try to query the BMC through HTTP POST (available from ILO version 3)
@@ -63,12 +65,6 @@ result:
     "speed_autoselect": {
       "@value": "Y"
     },
-    "nic_speed": {
-      "@value": "Automatic"
-    },
-    "full_duplex": {
-      "@value": "Automatic"
-    },
     "dhcp_enable": {
       "@value": "N"
     },
@@ -82,7 +78,7 @@ result:
   * Tests
   * Use a custom parser instead of Nori, to avoid one-element-hashes and cast responses to actual objects (e.g Y/N to true/false)
   * See for mandatory parameters
-  * Supports for write commands with multiple children (XML speaking) having attributes other than "value"
+  * Add a CLI tool
 
 ## Setup
 
@@ -99,4 +95,4 @@ OR
 
 ## Credits
 
-ilorb started as a port of [python-hpilo](https://github.com/seveas/python-hpilo), because Ruby.
+ilorb started as a port of [python-hpilo](https://github.com/seveas/python-hpilo)

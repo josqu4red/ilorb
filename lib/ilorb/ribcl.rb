@@ -4,6 +4,7 @@ module ILORb
       super
     end
 
+    # mapping between Ruby objects and api format
     VALUES = {
       true => "yes",
       false => "no",
@@ -17,6 +18,7 @@ module ILORb
     end
 
     private
+    # private methods are used by DSL
 
     def context(name, &block)
       context = Context.new(name)
@@ -34,6 +36,7 @@ module ILORb
     end
 
     private
+    # private methods are used by DSL
 
     [:read, :write].each do |mode|
       define_method "#{mode}_cmd" do |name, &block|
@@ -90,6 +93,7 @@ module ILORb
     end
 
     private
+    # private methods are used by DSL
 
     def attributes(*params)
       @attributes += params
