@@ -7,6 +7,7 @@ require 'nori'
 
 module ILORb
   class ILO
+
     def initialize(config = {})
       @hostname = config[:hostname]
       @login = config[:login] || "Administrator"
@@ -30,22 +31,29 @@ module ILORb
         params = args.first || {}
         attributes = {}
         elements = {}
+        element_map = nil
+
+        #TODO NotImplementedError if :not_impl is present
+        #TODO check for text
 
         if @ribcl.has_attributes?(name)
           @ribcl.get_attributes(name).each do |attr|
             # Attributes are mandatory
             error("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
-            attributes[attr] = @ribcl.encode(params[attr])
+            attributes.store(attr, @ribcl.encode(params.delete(attr)))
           end
         end
 
-        #TODO manage elements with attribute name != "value"
         if @ribcl.has_elements?(name)
-          @ribcl.get_elements(name).each do |elt|
+          element_map = @ribcl.map_elements(name)
+          params.each do |key, value|
             # Elements are not mandatory for now
-            elements[elt] = @ribcl.encode(params[elt]) if params.has_key?(elt)
+            elements.store(key, @ribcl.encode(params.delete(key))) if element_map.has_key?(key)
           end
         end
+
+        #TODO check for CDATA
+        #TODO fix duplicate nodes when multiple attributes
 
         @log.info("Calling method #{name}")
         if elements.empty?
@@ -53,7 +61,7 @@ module ILORb
         else
           request = ribcl_request(name, attributes) do |xml|
             elements.each do |key, value|
-              xml.send(key, :value => value)
+              xml.send(element_map[key].first, element_map[key].last => value)
             end
           end
         end
