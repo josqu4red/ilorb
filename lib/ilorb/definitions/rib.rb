@@ -26,7 +26,7 @@ context :rib_info do
   end
 
   write_cmd :ahs_clear_data
-  write_cmd :brownout_recovery # > mod_global
+  write_cmd :brownout_recovery # > mod_global_settings
   write_cmd :certificate_signing_request
   write_cmd :clear_eventlog
   write_cmd :computer_lock do
@@ -41,7 +41,8 @@ context :rib_info do
   write_cmd :hotkey_config do
     not_implemented
   end
-  write_cmd :import_certificate do
+  write_cmd :import_certificate do #TODO
+    not_implemented
     text :certificate
   end
   write_cmd :insert_virtual_media do
@@ -50,9 +51,15 @@ context :rib_info do
   write_cmd :license do
     elements :activate => :key
   end
-  write_cmd :mod_global_settings #TODO
-  write_cmd :mod_network_settings #TODO
-  write_cmd :mod_snmp_im_settings #TODO
+  write_cmd :mod_global_settings do #TODO
+    not_implemented
+  end
+  write_cmd :mod_network_settings do #TODO
+    not_implemented
+  end
+  write_cmd :mod_snmp_im_settings do #TODO
+    not_implemented
+  end
   write_cmd :profile_apply do
     not_implemented
   end
@@ -76,6 +83,7 @@ context :rib_info do
     attributes :lang_id
   end
   write_cmd :set_security_msg do
+    not_implemented
     elements :security_msg, :security_msg_text => :cdata
   end
   write_cmd :set_vm_status do
@@ -88,7 +96,7 @@ context :rib_info do
   write_cmd :trigger_test_event do
     not_implemented
   end
-  write_cmd :update_firmware do #HARD
+  write_cmd :update_firmware do #TODO
     not_implemented
   end
 end
