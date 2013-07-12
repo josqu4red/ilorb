@@ -3,6 +3,8 @@ context :server_info do
   read_cmd :get_host_power_saver_status
   read_cmd :get_host_power_status
   read_cmd :get_host_pwr_micro_ver
+  read_cmd :get_one_time_boot
+  read_cmd :get_persistent_boot
   read_cmd :get_power_cap
   read_cmd :get_power_readings
   read_cmd :get_pwreg
@@ -29,6 +31,12 @@ context :server_info do
   end
   write_cmd :set_host_power_saver do
     attributes :host_power_saver
+  end
+  write_cmd :set_one_time_boot do
+    attributes :value
+  end
+  write_cmd :set_persistent_boot do
+    not_implemented
   end
   write_cmd :set_power_cap do
     attributes :power_cap

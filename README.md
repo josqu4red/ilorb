@@ -95,4 +95,4 @@ OR
 
 ## Credits
 
-ilorb started as a port of [python-hpilo](https://github.com/seveas/python-hpilo)
+ilorb is inspired by [python-hpilo](https://github.com/seveas/python-hpilo)
