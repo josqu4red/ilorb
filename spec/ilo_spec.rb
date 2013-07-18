@@ -57,6 +57,19 @@ describe ILORb::ILO do
     its([:status]) { should include(code: 0, message: 'No error') }
   end
 
+  describe "#set_persistent_boot" do
+    before do
+      stub_request(:post, "https://10.200.0.1/ribcl").
+        with(:body => "<?xml version=\"1.0\"?>\n<ribcl version=\"2.0\">\n  <login password=\"SECRET\" user_login=\"Admin\">\n    <server_info mode=\"write\">\n      <set_persistent_boot>\n        <device value=\"FLOPPY\"/>\n        <device value=\"CDROM\"/>\n      </set_persistent_boot>\n    </server_info>\n  </login>\n</ribcl>\n").
+        to_return(:status => 200, :body => asset_file('basic_response.xml'))
+    end
+
+    subject { ilo.set_persistent_boot([{ device_value: "FLOPPY" },
+                                       { device_value: "CDROM" }]) }
+
+    its([:status]) { should include(code: 0, message: 'No error') }
+  end
+
   private
 
   def asset_file(asset)
