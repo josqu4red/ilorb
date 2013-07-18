@@ -36,7 +36,7 @@ context :server_info do
     attributes :value
   end
   write_cmd :set_persistent_boot do
-    not_implemented
+    elements :device => [ :value ]
   end
   write_cmd :set_power_cap do
     attributes :power_cap

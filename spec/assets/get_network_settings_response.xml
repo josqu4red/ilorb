@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<RIBCL VERSION="2.22">
+  <RESPONSE
+    STATUS="0x0000"
+    MESSAGE='No error'
+    />
+  <GET_NETWORK_SETTINGS>
+    <ENABLE_NIC VALUE="Y"/>
+    <SHARED_NETWORK_PORT VALUE="N"/>
+    <VLAN_ENABLED VALUE="N"/>
+    <VLAN_ID VALUE="0"/>
+    <SPEED_AUTOSELECT VALUE="Y"/>
+    <NIC_SPEED VALUE="Automatic"/>
+    <FULL_DUPLEX VALUE="Automatic"/>
+    <DHCP_ENABLE VALUE="Y"/>
+    <DHCP_GATEWAY VALUE="N"/>
+    <DHCP_DNS_SERVER VALUE="Y"/>
+    <DHCP_WINS_SERVER VALUE="N"/>
+    <DHCP_STATIC_ROUTE VALUE="N"/>
+    <DHCP_DOMAIN_NAME VALUE="N"/>
+    <DHCP_SNTP_SETTINGS VALUE="Y"/>
+    <REG_WINS_SERVER VALUE="N"/>
+    <REG_DDNS_SERVER VALUE="N"/>
+    <PING_GATEWAY VALUE="N"/>
+    <MAC_ADDRESS VALUE="1c:c1:de:17:b3:90"/>
+    <IP_ADDRESS VALUE="192.168.1.13"/>
+    <SUBNET_MASK VALUE="255.255.255.0"/>
+    <GATEWAY_IP_ADDRESS VALUE="0.0.0.0"/>
+    <DNS_NAME VALUE="weezer"/>
+    <DOMAIN_NAME VALUE="ilotest.com."/>
+    <PRIM_DNS_SERVER VALUE="0.0.0.0"/>
+    <SEC_DNS_SERVER VALUE="0.0.0.0"/>
+    <TER_DNS_SERVER VALUE="0.0.0.0"/>
+    <PRIM_WINS_SERVER VALUE="0.0.0.0"/>
+    <SEC_WINS_SERVER VALUE="0.0.0.0"/>
+    <SNTP_SERVER1 VALUE="192.168.1.5"/>
+    <SNTP_SERVER2 VALUE=""/>
+    <TIMEZONE VALUE="CST6CDT"/>
+    <STATIC_ROUTE_1 DEST="0.0.0.0"
+                    MASK="0.0.0.0"
+                    GATEWAY="0.0.0.0"/>
+    <STATIC_ROUTE_2 DEST="0.0.0.0"
+                    MASK="0.0.0.0"
+                    GATEWAY="0.0.0.0"/>
+    <STATIC_ROUTE_3 DEST="0.0.0.0"
+                    MASK="0.0.0.0"
+                    GATEWAY="0.0.0.0"/>
+    <IPV6_ADDRESS   VALUE="2001:2:1::15"
+                    PREFIXLEN="64"
+                    ADDR_SOURCE="STATIC"
+                    ADDR_STATUS="ACTIVE"/>
+    <IPV6_ADDRESS   VALUE="2001:db8:1::50"
+                    PREFIXLEN="64"
+                    ADDR_SOURCE="STATIC"
+                    ADDR_STATUS="ACTIVE"/>
+    <IPV6_ADDRESS   VALUE="fe80::1ec1:deff:fe17:b390"
+                    PREFIXLEN="64"
+                    ADDR_SOURCE="SLAAC"
+                    ADDR_STATUS="ACTIVE"/>
+    <IPV6_ADDRESS   VALUE="2001:2:1:0:1ec1:deff:fe17:b390"
+                    PREFIXLEN="64"
+                    ADDR_SOURCE="SLAAC"
+                    ADDR_STATUS="ACTIVE"/>
+    <IPV6_STATIC_ROUTE_1
+      IPV6_DEST="2001:2:2::20"
+      PREFIXLEN="64"
+      IPV6_GATEWAY="fe80::1:2:3"
+      ADDR_STATUS="ACTIVE"/>
+    <IPV6_STATIC_ROUTE_2
+      IPV6_DEST="::"
+      PREFIXLEN="0"
+      IPV6_GATEWAY="::"
+      ADDR_STATUS="INACTIVE"/>
+    <IPV6_STATIC_ROUTE_3
+      IPV6_DEST="2001:1001:2002:3003::"
+      PREFIXLEN="64"
+      IPV6_GATEWAY="2001:db8:1::40"
+      ADDR_STATUS="ACTIVE"/>
+    <IPV6_PRIM_DNS_SERVER VALUE="2001:1:2::5"/>
+    <IPV6_SEC_DNS_SERVER VALUE="2001:1:2::6"/>
+    <IPV6_TER_DNS_SERVER VALUE="::"/>
+    <IPV6_DEFAULT_GATEWAY VALUE="fe80::21c:c4ff:fe18:9cbd"/>
+    <IPV6_PREFERRED_PROTOCOL VALUE="Y"/>
+    <IPV6_ADDR_AUTOCFG VALUE="Y"/>
+    <IPV6_REG_DDNS_SERVER VALUE="Y"/>
+  </GET_NETWORK_SETTINGS>
+</RIBCL>

@@ -36,7 +36,6 @@ module ILORb
 
         params = args.first || {}
         attributes = {}
-        elements = {}
         element_map = nil
 
         #TODO check for text
@@ -48,23 +47,32 @@ module ILORb
         end
 
         element_map = command.map_elements
-        params.each do |key, value|
-          # Elements are not mandatory for now
-          elements.store(key, @ribcl.encode(params.delete(key))) if element_map.has_key?(key)
+
+        elements_array = []
+
+        [ params ].flatten.each do |params_hash|
+          elements = {}
+          params_hash.each do |key, value|
+            # Elements are not mandatory for now
+            elements.store(key, @ribcl.encode(params_hash.delete(key))) if element_map.has_key?(key)
+          end
+          elements_array << elements
         end
 
         #TODO check for CDATA
 
         @log.info("Calling method #{name}")
         request = ribcl_request(command, attributes) do |xml|
-          elements.each do |key, value|
-            elt = command.get_elements[element_map[key].first]
-            if elt.is_a?(Array)
-              attrs = Hash[elt.map{|x| [x, elements.delete(element_map.invert[[element_map[key].first, x]])]}]
-            else
-              attrs = {element_map[key].last => value}
+          elements_array.each do |elements_hash|
+            elements_hash.each do |key, value|
+              elt = command.get_elements[element_map[key].first]
+              if elt.is_a?(Array)
+                attrs = Hash[elt.map{|x| [x, elements_hash.delete(element_map.invert[[element_map[key].first, x]])]}]
+              else
+                attrs = {element_map[key].last => value}
+              end
+              xml.send(element_map[key].first, attrs)
             end
-            xml.send(element_map[key].first, attrs)
           end
         end
 
