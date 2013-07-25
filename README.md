@@ -91,7 +91,7 @@ Dependencies:
 Install:
  * git clone https://github.com/josqu4red/ilorb
 OR
- * gem install ilorb (soon)
+ * gem install ilorb
 
 ## Credits
 
