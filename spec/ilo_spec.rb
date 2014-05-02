@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe ILORb::ILO do
+describe ILORb do
   let(:hostname) { "10.200.0.1" }
   let(:login) { "Admin" }
   let(:password) { "SECRET" }
-  let(:ilo) { ILORb::ILO.new(hostname: hostname, login: login, password: password) }
+  let(:ilo) { ILORb.new(hostname: hostname, login: login, password: password) }
 
   describe "#get_network_settings" do
     before do
