@@ -16,11 +16,13 @@ HP, Integrated Lights Out and iLO are trademarks of HP, with whom the author of 
 
 ## Examples
 
+WARNING: as of 0.0.2, `ILORb::ILO` content has been moved to `ILORb`. Just use `ILORb#new`
+
 ```ruby
 require 'json'
 require 'ilorb'
 
-ilo = ILORb::ILO.new(
+ilo = ILORb.new(
   :hostname => "10.200.0.1",
   :login => "Admin",
   :password => "SECRET",

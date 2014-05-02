@@ -1,3 +1,3 @@
-module ILORb
-  VERSION = "0.0.1"
+class ILORb
+  VERSION = "0.0.2"
 end
