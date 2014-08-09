@@ -8,7 +8,7 @@ require 'ilorb/ribcl'
 
 class ILORb
 
-  class NotImplemented < StandardError; end
+  class NotImplementedError < StandardError; end
 
   def initialize(config = {})
     @hostname = config[:hostname]
@@ -32,7 +32,7 @@ class ILORb
     if @ribcl.has_command?(name)
       command = @ribcl.command(name)
 
-      raise NotImplemented, "#{name} is not supported" unless command.supported?
+      raise NotImplementedError, "#{name} is not supported" unless command.supported?
 
       params = args.first || {}
       attributes = {}
@@ -93,6 +93,22 @@ class ILORb
 
   private
 
+  def ribcl_request(command, args = {}, &block)
+    builder = Nokogiri::XML::Builder.new do |xml|
+      xml.ribcl(:version => "2.0") {
+        xml.login(:password => @password, :user_login => @login) {
+          xml.send(command.context, :mode => command.mode) {
+            xml.send(command.name, args) {
+              yield xml if block_given?
+            }
+          }
+        }
+      }
+    end
+
+    builder.to_xml
+  end
+
   def send_request(xml)
     case @protocol
     when :http
@@ -127,7 +143,7 @@ class ILORb
     sock = TCPSocket.new(@hostname, @port)
 
     ctx = OpenSSL::SSL::SSLContext.new(:TLSv1)
-    ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE unless @verify_ssl
     ssl_sock = OpenSSL::SSL::SSLSocket.new(sock, ctx)
     ssl_sock.sync_close = true
 
@@ -176,22 +192,6 @@ class ILORb
     end
 
     output
-  end
-
-  def ribcl_request(command, args = {}, &block)
-    builder = Nokogiri::XML::Builder.new do |xml|
-      xml.ribcl(:version => "2.0") {
-        xml.login(:password => @password, :user_login => @login) {
-          xml.send(command.context, :mode => command.mode) {
-            xml.send(command.name, args) {
-              yield xml if block_given?
-            }
-          }
-        }
-      }
-    end
-
-    builder.to_xml
   end
 
   def setup_commands
