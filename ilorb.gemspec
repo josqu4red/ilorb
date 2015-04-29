@@ -24,5 +24,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "webmock", "~> 1.13"
   spec.add_development_dependency "pry"
   spec.add_dependency "nokogiri"
-  spec.add_dependency "nori"
+  spec.add_dependency "nori", "~> 2"
 end
