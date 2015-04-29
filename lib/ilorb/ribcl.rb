@@ -1,5 +1,9 @@
 class ILORb
   class RIBCL < Hash
+
+    class NotImplementedError < StandardError; end
+    class InvalidDefinitionError < StandardError; end
+
     def initialize
       super
     end
@@ -92,14 +96,6 @@ class ILORb
         map
       end
 
-      def get_params
-        params = []
-        params += @attributes
-        params << @text if @text
-        params += map_elements.keys
-        params
-      end
-
       private
       # private methods are used by DSL
 
@@ -118,12 +114,16 @@ class ILORb
             end
           end
           @elements.merge!(hash)
+        else
+          raise InvalidDefinitionError, "no elements and text"
         end
       end
 
       def text(param)
         if @elements.empty?
           @text = param
+        else
+          raise InvalidDefinitionError, "no text and elements"
         end
       end
 

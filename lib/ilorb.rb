@@ -8,8 +8,6 @@ require 'ilorb/ribcl'
 
 class ILORb
 
-  class NotImplementedError < StandardError; end
-
   def initialize(config = {})
     @hostname = config[:hostname]
     @login = config[:login] || "Administrator"
@@ -32,13 +30,12 @@ class ILORb
     if @ribcl.has_command?(name)
       command = @ribcl.command(name)
 
-      raise NotImplementedError, "#{name} is not supported" unless command.supported?
+      raise RIBCL::NotImplementedError, "#{name} is not supported" unless command.supported?
+      @log.info("Calling method #{name}")
 
       params = args.first || {}
       attributes = {}
       element_map = nil
-
-      #TODO check for text
 
       command.get_attributes.each do |attr|
         # Attributes are mandatory
@@ -46,34 +43,34 @@ class ILORb
         attributes.store(attr, @ribcl.encode(params.delete(attr)))
       end
 
-      element_map = command.map_elements
+      if !command.get_elements.empty?
+        element_map = command.map_elements
 
-      elements_array = []
-
-      [ params ].flatten.each do |params_hash|
-        elements = {}
-        params_hash.each do |key, value|
-          # Elements are not mandatory for now
-          elements.store(key, @ribcl.encode(params_hash.delete(key))) if element_map.has_key?(key)
+        elements_array = [params].flatten.map do |params_hash|
+          Hash[params_hash.map{ |k,v| [ k, @ribcl.encode(params_hash.delete(k)) ] if element_map.has_key?(k) }.compact]
         end
-        elements_array << elements
-      end
 
-      #TODO check for CDATA
+        #TODO check for CDATA
 
-      @log.info("Calling method #{name}")
-      request = ribcl_request(command, attributes) do |xml|
-        elements_array.each do |elements_hash|
-          elements_hash.each do |key, value|
-            elt = command.get_elements[element_map[key].first]
-            if elt.is_a?(Array)
-              attrs = Hash[elt.map{|x| [x, elements_hash.delete(element_map.invert[[element_map[key].first, x]])]}]
-            else
-              attrs = {element_map[key].last => value}
+        request = ribcl_request(command, attributes) do |xml|
+          elements_array.each do |elements_hash|
+            elements_hash.each do |key, value|
+              elt = command.get_elements[element_map[key].first]
+              if elt.is_a?(Array)
+                attrs = Hash[elt.map{|x| [x, elements_hash.delete(element_map.invert[[element_map[key].first, x]])]}]
+              else
+                attrs = {element_map[key].last => value}
+              end
+              xml.send(element_map[key].first, attrs)
             end
-            xml.send(element_map[key].first, attrs)
           end
         end
+      elsif !command.get_text.nil?
+        if text = params[command.get_text]
+          request = ribcl_request(command, text, attributes)
+        end
+      else
+        request = ribcl_request(command, attributes)
       end
 
       response = send_request(request)
@@ -93,12 +90,12 @@ class ILORb
 
   private
 
-  def ribcl_request(command, args = {}, &block)
+  def ribcl_request(command, *args, &block)
     builder = Nokogiri::XML::Builder.new do |xml|
       xml.ribcl(:version => "2.0") {
         xml.login(:password => @password, :user_login => @login) {
           xml.send(command.context, :mode => command.mode) {
-            xml.send(command.name, args) {
+            xml.send(command.name, *args) {
               yield xml if block_given?
             }
           }
