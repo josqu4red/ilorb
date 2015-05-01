@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ribcl version="2.0">
+  <login password="SECRET" user_login="Admin">
+    <server_info mode="write">
+      <set_pwreg>
+        <pwralert type="PEAK"/>
+        <pwralert_settings threshold="200" duration="35"/>
+      </set_pwreg>
+    </server_info>
+  </login>
+</ribcl>

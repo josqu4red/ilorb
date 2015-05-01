@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ribcl version="2.0">
+  <login password="SECRET" user_login="Admin">
+    <server_info mode="write">
+      <set_persistent_boot>
+        <device value="FLOPPY"/>
+        <device value="CDROM"/>
+      </set_persistent_boot>
+    </server_info>
+  </login>
+</ribcl>

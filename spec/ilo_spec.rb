@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe ILORb do
   let(:hostname) { "10.200.0.1" }
@@ -8,72 +8,56 @@ describe ILORb do
 
   describe "#get_network_settings" do
     before do
-      stub_request(:post, "https://10.200.0.1/ribcl").
-        with(:body => "<?xml version=\"1.0\"?>\n<ribcl version=\"2.0\">\n  <login password=\"SECRET\" user_login=\"Admin\">\n    <rib_info mode=\"read\">\n      <get_network_settings/>\n    </rib_info>\n  </login>\n</ribcl>\n").
-        to_return(:status => 200, :body => asset_file('get_network_settings_response.xml'))
+      stub_request(:post, "https://10.200.0.1/ribcl")
+        .with(body: asset_file("get_network_settings_request.xml"))
+        .to_return(status: 200, body: asset_file("get_network_settings_response.xml"))
     end
 
     subject { ilo.get_network_settings }
 
-    its([:status]) { should include(code: 0, message: 'No error') }
+    its([:status]) { should include(code: 0, message: "No error") }
     its([:get_network_settings]) { should_not be_empty }
   end
 
   describe "#set_one_time_boot" do
     before do
-      stub_request(:post, "https://10.200.0.1/ribcl").
-        with(:body => "<?xml version=\"1.0\"?>\n<ribcl version=\"2.0\">\n  <login password=\"SECRET\" user_login=\"Admin\">\n    <server_info mode=\"write\">\n      <set_one_time_boot value=\"FLOPPY\"/>\n    </server_info>\n  </login>\n</ribcl>\n").
-        to_return(:status => 200, :body => asset_file('basic_response.xml'))
+      stub_request(:post, "https://10.200.0.1/ribcl")
+        .with(body: asset_file("set_one_time_boot_request.xml"))
+        .to_return(status: 200, body: asset_file("basic_response.xml"))
     end
 
     subject { ilo.set_one_time_boot(value: "FLOPPY") }
 
-    its([:status]) { should include(code: 0, message: 'No error') }
+    its([:status]) { should include(code: 0, message: "No error") }
   end
 
   describe "#set_pwreg" do
     before do
-      stub_request(:post, "https://10.200.0.1/ribcl").
-        with(:body => "<?xml version=\"1.0\"?>\n<ribcl version=\"2.0\">\n  <login password=\"SECRET\" user_login=\"Admin\">\n    <server_info mode=\"write\">\n      <set_pwreg>\n        <pwralert type=\"PEAK\"/>\n        <pwralert_settings threshold=\"200\" duration=\"35\"/>\n      </set_pwreg>\n    </server_info>\n  </login>\n</ribcl>\n").
-        to_return(:status => 200, :body => asset_file('basic_response.xml'))
+      stub_request(:post, "https://10.200.0.1/ribcl")
+        .with(body: asset_file("set_pwreg_request.xml"))
+        .to_return(status: 200, body: asset_file("basic_response.xml"))
     end
 
-    subject { ilo.set_pwreg pwralert_type: "PEAK",
-                            pwralert_settings_threshold: 200,
-                            pwralert_settings_duration: 35 }
+    subject { ilo.set_pwreg(pwralert_type: "PEAK", pwralert_settings_threshold: 200, pwralert_settings_duration: 35) }
 
-    its([:status]) { should include(code: 0, message: 'No error') }
-  end
-
-  describe "#set_one_time_boot" do
-    before do
-      stub_request(:post, "https://10.200.0.1/ribcl").
-        with(:body => "<?xml version=\"1.0\"?>\n<ribcl version=\"2.0\">\n  <login password=\"SECRET\" user_login=\"Admin\">\n    <server_info mode=\"write\">\n      <set_one_time_boot value=\"FLOPPY\"/>\n    </server_info>\n  </login>\n</ribcl>\n").
-        to_return(:status => 200, :body => asset_file('basic_response.xml'))
-    end
-
-    subject { ilo.set_one_time_boot(value: "FLOPPY") }
-
-    its([:status]) { should include(code: 0, message: 'No error') }
+    its([:status]) { should include(code: 0, message: "No error") }
   end
 
   describe "#set_persistent_boot" do
     before do
-      stub_request(:post, "https://10.200.0.1/ribcl").
-        with(:body => "<?xml version=\"1.0\"?>\n<ribcl version=\"2.0\">\n  <login password=\"SECRET\" user_login=\"Admin\">\n    <server_info mode=\"write\">\n      <set_persistent_boot>\n        <device value=\"FLOPPY\"/>\n        <device value=\"CDROM\"/>\n      </set_persistent_boot>\n    </server_info>\n  </login>\n</ribcl>\n").
-        to_return(:status => 200, :body => asset_file('basic_response.xml'))
+      stub_request(:post, "https://10.200.0.1/ribcl")
+        .with(body: asset_file("set_persistent_boot_request.xml"))
+        .to_return(status: 200, body: asset_file("basic_response.xml"))
     end
 
-    subject { ilo.set_persistent_boot([{ device_value: "FLOPPY" },
-                                       { device_value: "CDROM" }]) }
+    subject { ilo.set_persistent_boot([{ device_value: "FLOPPY" }, { device_value: "CDROM" }]) }
 
-    its([:status]) { should include(code: 0, message: 'No error') }
+    its([:status]) { should include(code: 0, message: "No error") }
   end
 
   private
 
   def asset_file(asset)
-    path = File.join(File.dirname(__FILE__), 'assets', asset)
-    File.new(path)
+    File.open(File.join(File.dirname(__FILE__), "assets", asset)).read
   end
 end

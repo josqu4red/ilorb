@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ribcl version="2.0">
+  <login password="SECRET" user_login="Admin">
+    <server_info mode="write">
+      <set_one_time_boot value="FLOPPY"/>
+    </server_info>
+  </login>
+</ribcl>

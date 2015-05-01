@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ribcl version="2.0">
+  <login password="SECRET" user_login="Admin">
+    <rib_info mode="read">
+      <get_network_settings/>
+    </rib_info>
+  </login>
+</ribcl>
