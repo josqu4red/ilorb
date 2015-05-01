@@ -50,22 +50,27 @@ context :rib_info do
     attributes :device, :image_url
   end
   write_cmd :license do
-    elements :activate => :key
+    elements activate: :key
   end
   write_cmd :mod_global_settings do
-    elements :session_timeout, :f8_prompt_enabled, :http_port, :https_port, :remote_console_port, :min_password, :ilo_funct_enabled, :virtual_media_port, :f8_login_required, :enforce_aes, :authentication_failure_logging, :ssh_status, :ssh_port, :serial_cli_status, :serial_cli_speed, :rbsu_post_ip, :snmp_access_enabled, :snmp_port, :snmp_trap_port, :remote_syslog_enable, :remote_syslog_port, :remote_syslog_server_address, :alertmail_enable, :alertmail_email_address, :alertmail_sender_domain, :alertmail_smtp_server, :ipmi_dcmi_over_lan_enabled, :vsp_log_enable
+    elements :session_timeout, :f8_prompt_enabled, :http_port, :https_port, :remote_console_port, :min_password,
+             :ilo_funct_enabled, :virtual_media_port, :f8_login_required, :enforce_aes, :authentication_failure_logging,
+             :ssh_status, :ssh_port, :serial_cli_status, :serial_cli_speed, :rbsu_post_ip, :snmp_access_enabled,
+             :snmp_port, :snmp_trap_port, :remote_syslog_enable, :remote_syslog_port, :remote_syslog_server_address,
+             :alertmail_enable, :alertmail_email_address, :alertmail_sender_domain, :alertmail_smtp_server,
+             :ipmi_dcmi_over_lan_enabled, :vsp_log_enable
   end
   write_cmd :mod_network_settings do
     elements :enable_nic, :nic_speed, :full_duplex, :speed_autoselect, :ping_gateway,
              :shared_network_port, :vlan_enabled, :vlan_id,
-             :dhcp_enable, :dhcp_domain_name, :dhcp_gateway, :dhcp_dns_server, :dhcp_wins_server, :dhcp_static_route, :dhcp_sntp_settings,
-             :ip_address, :subnet_mask, :gateway_ip_address, :dns_name, :domain_name,
+             :dhcp_enable, :dhcp_domain_name, :dhcp_gateway, :dhcp_dns_server, :dhcp_wins_server, :dhcp_static_route,
+             :dhcp_sntp_settings, :ip_address, :subnet_mask, :gateway_ip_address, :dns_name, :domain_name,
              :prim_dns_server, :sec_dns_server, :ter_dns_server, :reg_ddns_server,
              :prim_wins_server, :sec_wins_server, :reg_wins_server,
              :sntp_server1, :sntp_server2, :timezone,
              :enclosure_ip_enable, :web_agent_ip_address
   end
-  write_cmd :mod_snmp_im_settings do #TODO
+  write_cmd :mod_snmp_im_settings do # TODO
     not_implemented
   end
   write_cmd :profile_apply do
@@ -92,7 +97,7 @@ context :rib_info do
   end
   write_cmd :set_security_msg do
     not_implemented
-    elements :security_msg, :security_msg_text => :cdata
+    elements :security_msg, security_msg_text: :cdata
   end
   write_cmd :set_vm_status do
     attributes :device
@@ -104,7 +109,7 @@ context :rib_info do
   write_cmd :trigger_test_event do
     not_implemented
   end
-  write_cmd :update_firmware do #TODO
+  write_cmd :update_firmware do # TODO
     not_implemented
   end
 end

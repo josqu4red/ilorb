@@ -10,7 +10,7 @@ context :server_info do
 
   read_cmd :get_persistent_boot
   write_cmd :set_persistent_boot do
-    elements :device => [ :value ]
+    elements device: [:value]
   end
 
   read_cmd :get_one_time_boot
@@ -43,7 +43,7 @@ context :server_info do
 
   read_cmd :get_pwreg
   write_cmd :set_pwreg do
-    elements :pwralert => :type, :pwralert_settings => [:threshold, :duration]
+    elements pwralert: :type, pwralert_settings: [:threshold, :duration]
   end
 
   read_cmd :get_power_cap

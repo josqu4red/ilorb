@@ -1,6 +1,6 @@
 class ILORb
+  # ILO API methods DSL implementation
   class RIBCL < Hash
-
     class NotImplementedError < StandardError; end
     class InvalidDefinitionError < StandardError; end
 
@@ -9,7 +9,7 @@ class ILORb
     end
 
     # meaningful aliases
-    alias_method :has_command?, :has_key?
+    alias_method :command?, :key?
     alias_method :command, :fetch
 
     # mapping between Ruby objects and api format
@@ -31,7 +31,6 @@ class ILORb
     end
 
     private
-    # private methods are used by DSL
 
     def context(name, &block)
       context = Context.new(name)
@@ -39,6 +38,7 @@ class ILORb
       merge!(context.commands)
     end
 
+    # Implements contexts matching categories in ILO API (Server, RIB, User, etc.)
     class Context
       attr_reader :commands
 
@@ -46,9 +46,6 @@ class ILORb
         @name = name.to_sym
         @commands = {}
       end
-
-      private
-      # private methods are used by DSL
 
       [:read, :write].each do |mode|
         define_method "#{mode}_cmd" do |name, &block|
@@ -59,6 +56,7 @@ class ILORb
       end
     end
 
+    # Implements ILO API commands with their parameters
     class Command
       attr_reader :name, :context, :mode
 
@@ -97,7 +95,6 @@ class ILORb
       end
 
       private
-      # private methods are used by DSL
 
       def attributes(*params)
         @attributes += params
@@ -115,7 +112,7 @@ class ILORb
           end
           @elements.merge!(hash)
         else
-          raise InvalidDefinitionError, "no elements and text"
+          fail InvalidDefinitionError, "no elements and text"
         end
       end
 
@@ -123,7 +120,7 @@ class ILORb
         if @elements.empty?
           @text = param
         else
-          raise InvalidDefinitionError, "no text and elements"
+          fail InvalidDefinitionError, "no text and elements"
         end
       end
 

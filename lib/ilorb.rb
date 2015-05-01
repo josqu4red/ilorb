@@ -1,13 +1,13 @@
-require 'logger'
-require 'socket'
-require 'openssl'
-require 'net/https'
-require 'nokogiri'
-require 'nori'
-require 'ilorb/ribcl'
+require "logger"
+require "socket"
+require "openssl"
+require "net/https"
+require "nokogiri"
+require "nori"
+require "ilorb/ribcl"
 
+# Main library class
 class ILORb
-
   def initialize(config = {})
     @hostname = config[:hostname]
     @login = config[:login] || "Administrator"
@@ -20,26 +20,25 @@ class ILORb
     @log = Logger.new(STDOUT)
     @log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
 
-    @nori = Nori.new(:convert_tags_to => lambda{|tag| tag.downcase.to_sym})
+    @nori = Nori.new(convert_tags_to: ->(tag) { tag.downcase.to_sym })
 
     setup_commands
   end
 
   # args should be empty or contain a hash anytime
   def method_missing(name, *args, &block)
-    if @ribcl.has_command?(name)
+    if @ribcl.command?(name)
       command = @ribcl.command(name)
 
-      raise RIBCL::NotImplementedError, "#{name} is not supported" unless command.supported?
+      fail RIBCL::NotImplementedError, "#{name} is not supported" unless command.supported?
       @log.info("Calling method #{name}")
 
       params = args.first || {}
       attributes = {}
-      element_map = nil
 
       command.get_attributes.each do |attr|
         # Attributes are mandatory
-        error("Attribute #{attr} missing in #{name} call") unless params.has_key?(attr)
+        error("Attribute #{attr} missing in #{name} call") unless params.key?(attr)
         attributes.store(attr, @ribcl.encode(params.delete(attr)))
       end
 
@@ -47,26 +46,26 @@ class ILORb
         element_map = command.map_elements
 
         elements_array = [params].flatten.map do |params_hash|
-          Hash[params_hash.map{ |k,v| [ k, @ribcl.encode(params_hash.delete(k)) ] if element_map.has_key?(k) }.compact]
+          Hash[params_hash.map { |k, _| [k, @ribcl.encode(params_hash.delete(k))] if element_map.key?(k) }.compact]
         end
 
-        #TODO check for CDATA
+        # TODO: check for CDATA
 
         request = ribcl_request(command, attributes) do |xml|
           elements_array.each do |elements_hash|
             elements_hash.each do |key, value|
               elt = command.get_elements[element_map[key].first]
               if elt.is_a?(Array)
-                attrs = Hash[elt.map{|x| [x, elements_hash.delete(element_map.invert[[element_map[key].first, x]])]}]
+                attrs = Hash[elt.map { |x| [x, elements_hash.delete(element_map.invert[[element_map[key].first, x]])] }]
               else
-                attrs = {element_map[key].last => value}
+                attrs = { element_map[key].last => value }
               end
               xml.send(element_map[key].first, attrs)
             end
           end
         end
       elsif !command.get_text.nil?
-        if text = params[command.get_text]
+        if (text = params[command.get_text])
           request = ribcl_request(command, text, attributes)
         end
       else
@@ -74,33 +73,33 @@ class ILORb
       end
 
       response = send_request(request)
-      parse_response(response, name)
+      parse_response(response)
     else
       super
     end
   end
 
   def respond_to(name)
-    @ribcl.has_command?(name) ? true : super
+    @ribcl.command?(name) ? true : super
   end
 
   def supported_commands
-    @ribcl.select{|name, command| command.supported?}.keys
+    @ribcl.select { |_, command| command.supported? }.keys
   end
 
   private
 
-  def ribcl_request(command, *args, &block)
+  def ribcl_request(command, *args)
     builder = Nokogiri::XML::Builder.new do |xml|
-      xml.ribcl(:version => "2.0") {
-        xml.login(:password => @password, :user_login => @login) {
-          xml.send(command.context, :mode => command.mode) {
-            xml.send(command.name, *args) {
+      xml.ribcl(version: "2.0") do
+        xml.login(password: @password, user_login: @login) do
+          xml.send(command.context, mode: command.mode) do
+            xml.send(command.name, *args) do
               yield xml if block_given?
-            }
-          }
-        }
-      }
+            end
+          end
+        end
+      end
     end
 
     builder.to_xml
@@ -149,7 +148,7 @@ class ILORb
     @log.debug("Request:\n#{xml}")
     ssl_sock.puts("#{xml}\r\n")
     response = ""
-    while line = ssl_sock.gets
+    while (line = ssl_sock.gets)
       response += line
     end
     ssl_sock.close
@@ -157,7 +156,7 @@ class ILORb
     response
   end
 
-  def parse_response(xml, command)
+  def parse_response(xml)
     @log.debug("Response:\n#{xml}")
 
     # ILO sends back multiple XML documents, split by XML header and remove first (empty)
@@ -166,17 +165,15 @@ class ILORb
     output = {}
 
     messages.each do |doc|
-      xml_doc = Nokogiri::XML(doc){|cfg| cfg.nonet.noblanks}
+      xml_doc = Nokogiri::XML(doc) { |cfg| cfg.nonet.noblanks }
 
       xml_doc.root.children.each do |node|
         case node.name
         when "RESPONSE"
           code = node.attr("STATUS").to_i(16)
           message = node.attr("MESSAGE")
-          if code == 0
-            output[:status] = { :code => code, :message => message }
-          else
-            output[:status] = { :code => code, :message => message }
+          output[:status] = { code: code, message: message }
+          if code != 0
             @log.error("#{message} (#{code})")
             break
           end
@@ -198,6 +195,6 @@ class ILORb
 
   def error(message)
     @log.error(message)
-    raise message
+    fail message
   end
 end
