@@ -1,0 +1,25 @@
+AllCops:
+  DisplayCopNames: true
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 15
+  CountComments: false
+
+Metrics/ClassLength:
+  Max: 150
+  CountComments: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Style/TrailingComma:
+  EnforcedStyleForMultiline: consistent_comma
