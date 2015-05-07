@@ -10,12 +10,13 @@ require "ilorb/ribcl"
 class ILORb
   def initialize(config = {})
     @hostname = config[:hostname]
-    @login = config[:login] || "Administrator"
     @password = config[:password]
-    @port = config[:port] || 443
-    @protocol = config[:protocol] || :http
-    @verify_ssl = config[:verify_ssl] || false
-    @ribcl_path = "/ribcl"
+    @login = config.fetch(:login, "Administrator")
+    @port = config.fetch(:port, 443)
+    @protocol = config.fetch(:protocol, :http)
+    @verify_ssl = config.fetch(:verify_ssl, false)
+    @definitions_path = config.fetch(:definitions_path, File.join(File.dirname(__FILE__), "ilorb/definitions"))
+    @ribcl_path = config.fetch(:ribcl_path, "/ribcl")
 
     @log = Logger.new(STDOUT)
     @log.level = config[:debug] ? Logger::DEBUG : Logger::WARN
@@ -189,7 +190,7 @@ class ILORb
   end
 
   def setup_commands
-    @ribcl = ILORb::RIBCL.load(File.join(File.dirname(__FILE__), "ilorb/definitions", "*.rb"))
+    @ribcl = ILORb::RIBCL.load(File.join(@definitions_path, "*.rb"))
     nil
   end
 end
