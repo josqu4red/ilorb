@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ribcl version="2.0">
+  <login password="SECRET" user_login="Admin">
+    <rib_info mode="write">
+      <certificate_signing_request>
+        <csr_state value="state"/>
+        <csr_country value="country"/>
+        <csr_locality value="locality"/>
+        <csr_organization value="organization"/>
+        <csr_organizational_unit value="organizational_unit"/>
+        <csr_common_name value="common_name"/>
+      </certificate_signing_request>
+    </rib_info>
+  </login>
+</ribcl>

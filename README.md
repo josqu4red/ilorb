@@ -77,7 +77,6 @@ result:
 
 ## TODO
 
-  * Tests
   * Use a custom parser instead of Nori, to avoid one-element-hashes and cast responses to actual objects (e.g Y/N to true/false)
   * See for mandatory parameters
   * Add a CLI tool
