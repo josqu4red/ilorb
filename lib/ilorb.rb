@@ -38,7 +38,7 @@ class ILORb
 
       command.get_attributes.each do |attr|
         # Attributes are mandatory
-        error("Attribute #{attr} missing in #{name} call") unless params.key?(attr)
+        fail "Attribute #{attr} missing in #{name} call" unless params.key?(attr)
         attributes.store(attr, @ribcl.encode(params.delete(attr)))
       end
 
@@ -144,8 +144,8 @@ class ILORb
     ssl_sock.sync_close = true
 
     @log.info("Connecting to #{@hostname}:#{@port}")
-    ssl_sock.connect
     @log.debug("Request:\n#{xml}")
+    ssl_sock.connect
     ssl_sock.puts("#{xml}\r\n")
     response = ""
     while (line = ssl_sock.gets)
@@ -191,10 +191,5 @@ class ILORb
   def setup_commands
     @ribcl = ILORb::RIBCL.load(File.join(File.dirname(__FILE__), "ilorb/definitions", "*.rb"))
     nil
-  end
-
-  def error(message)
-    @log.error(message)
-    fail message
   end
 end
