@@ -92,4 +92,6 @@ context :server_info do
 
   read_cmd :get_server_power_on_time
   write_cmd :clear_server_power_on_time
+
+  write_cmd :clear_iml
 end
